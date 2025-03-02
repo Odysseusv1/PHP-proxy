@@ -1,3 +1,4 @@
+
 <?php
 
 // Sanitize and validate URL
@@ -22,6 +23,14 @@ function fetch_content($url) {
     curl_setopt($ch, CURLOPT_HEADER, true);
 
     $response = curl_exec($ch);
+
+    // Check for cURL errors
+    if (curl_errno($ch)) {
+        echo 'cURL error: ' . curl_error($ch);
+        curl_close($ch);
+        exit;
+    }
+
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     $headers = substr($response, 0, $header_size);
     $body = substr($response, $header_size);
@@ -32,7 +41,7 @@ function fetch_content($url) {
     $header_lines = explode("\r\n", $headers);
     foreach ($header_lines as $header) {
         // Remove or skip over headers that might prevent embedding
-        if (stripos($header, 'X-Frame-Options') === false && stripos($header, 'Content-Security-Policy') === false) {
+        if (stripos($header, 'X-Frame-Options') === false && stripos($header, 'Content-Security-Policy') === false && !empty($header)) {
             header($header);
         }
     }
@@ -40,8 +49,23 @@ function fetch_content($url) {
     return $body;
 }
 
+// Start output buffering
+ob_start();
+
 // Fetch and display the content
 $content = fetch_content($url);
+
+// Get the content type from the fetched content
+$content_type = 'text/html'; // Default content type
+if (preg_match('/<meta[^>]+content=["\']?([^"\'>]+)["\']?[^>]*>/i', $content, $matches)) {
+    $content_type = $matches[1];
+}
+header("Content-Type: $content_type");
+
+// Output the content
 echo $content;
+
+// Flush the output buffer
+ob_end_flush();
 
 ?>

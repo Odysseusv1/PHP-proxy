@@ -1,0 +1,11 @@
+{
+  "name": "webvoyager-proxy",
+  "description": "A PHP-based web proxy that allows users to browse any website through an intermediary service",
+  "type": "project",
+  "require": {
+    "php": "^7.4|^8.0",
+    "ext-curl": "*",
+    "ext-dom": "*",
+    "ext-libxml": "*"
+  }
+}
